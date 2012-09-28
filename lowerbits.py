@@ -5,12 +5,9 @@ import sys
 import os
 from urllib2 import urlopen
 import tempfile
+import argparse
 
 
-#if len(sys.argv) < 2 or not os.path.isfile(sys.argv[1]):
-#    raise Exception("Falta un argumento")
-#source = "/home/defzo/Imágenes/picture_1.png"
-#source = 
 def check_lowerbits(source):
     
     im = Image.open(source)
@@ -26,25 +23,33 @@ def check_lowerbits(source):
             pos = (i, j)
             pixel = im.getpixel(pos)
             new.putpixel(pos, f_pixel(pixel))
-    #im.e
+    
     im.show()
     new.show()
-    
-def main(argv=sys.argv):
-    """Muestra los bits menos significativos de una imagen"""
-    if not len(argv)>1:
-        print "Falta el archivo o url"
-        return
-    fname = argv[1]
-    if os.path.isfile(fname):
-        check_lowerbits(fname)
+
+def get_lowerbis(file_or_url):
+    '''Maneja archivos o urls'''
+    if os.path.exists(file_or_url):
+        with open(file_or_url) as fp:
+            check_lowerbits(fp)
     else:
-        
+        # Si no es un archivo, lo tratamos como URL
         with tempfile.TemporaryFile() as fp:
-            fp.write(urlopen(fname).read())
-            fp.flush()
+            url_fp = urlopen(file_or_url)
+            fp.write(url_fp.read())
             fp.seek(0)
             check_lowerbits(fp)
+            
+def main():
+    """Muestra los bits menos significativos de una imagen"""
+    parser = argparse.ArgumentParser(description='Process some integers.')
+    parser.add_argument('urls', metavar='local_file_or_url', 
+                        nargs='+', # Uno o más argumentos
+                        help='Lista de archivos')
+    args = parser.parse_args() # Magicamente llama a sys.argv
+    for url_o_archivo in args.urls:
+        get_lowerbis(url_o_archivo)
+        
         
 if __name__ == '__main__':
     main()
